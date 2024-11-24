@@ -8,17 +8,27 @@ fully_supported_option_names = ['3x_plus_1']
 
 class OrbitOptions:
     """
-    Represents a configuration for orbit generation based on specific rules.
+    Represents a configuration for generating an orbit based on specific rules.
 
     Attributes:
-        name (str): Name of the orbit rule set.
-        min_n (int): Minimum starting value for the orbit.
-        should_halt (Callable): Function to determine when to halt the orbit.
-        should_decrease (Callable): Function to determine if the value should decrease.
-        should_increase (Callable): Function to determine if the value should increase.
-        decrease (Callable): Function to decrease the value. Returns an id for the decrease operation.
-        increase (Callable): Function to increase the value. Returns an id for the increase operation.
-        append_to_orbit (Callable): Function to append the current value to the orbit list.
+        name (str): The name of the orbit rule set, used for identification or labeling.
+        min_n (int): The minimum starting value allowed for the orbit.
+        should_halt (Callable): A function that takes an integer as input and returns a boolean.
+            Determines whether the orbit generation process should stop.
+        should_decrease (Callable): A function that takes an integer as input and returns a boolean.
+            Determines whether the current value should trigger a decrease operation.
+        should_increase (Callable): A function that takes an integer as input and returns a boolean.
+            Determines whether the current value should trigger an increase operation.
+        decrease (Callable): A function that takes an integer as input and returns a tuple of:
+            - The new integer value after the decrease operation.
+            - A string identifier describing the decrease operation.
+        increase (Callable): A function that takes an integer as input and returns a tuple of:
+            - The new integer value after the increase operation.
+            - A string identifier describing the increase operation.
+        append_to_orbit (Callable): A function that appends the current value to the orbit.
+            Accepts two arguments:
+            - The current value (int).
+            - The list representing the orbit (List[int]).
     """
     def __init__(
         self,
@@ -40,7 +50,8 @@ class OrbitOptions:
         self.increase: Callable[[int], Tuple[int, str]] = increase
         self.append_to_orbit: Callable[[int, List[int]], None] = append_to_orbit
 
-def create_collatz_3x_plus_1_options() -> OrbitOptions:
+
+def create_m3a1_options() -> OrbitOptions:
     """
     Creates an OrbitOptions instance for the classic 3x+1 (Collatz) rule set.
 
@@ -67,7 +78,7 @@ def create_collatz_3x_plus_1_options() -> OrbitOptions:
 
     return OrbitOptions('3x_plus_1', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
 
-def create_collatz_3x_plus_3_options() -> OrbitOptions:
+def create_m3a3_options() -> OrbitOptions:
     """
     Creates an OrbitOptions instance for a modified 3x+3 Collatz rule set.
 
@@ -94,7 +105,7 @@ def create_collatz_3x_plus_3_options() -> OrbitOptions:
 
     return OrbitOptions('3x_plus_3', 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
 
-def create_collatz_probabilistic_options(p: float) -> OrbitOptions:
+def create_probabilistic_options(p: float) -> OrbitOptions:
     """
     Creates an OrbitOptions instance for a probabilistic Collatz-like rule set.
 
@@ -119,7 +130,7 @@ def create_collatz_probabilistic_options(p: float) -> OrbitOptions:
     def increase(n: int) -> Tuple[int, str]:
         r = random.random()
         if r < p:
-            return 3 * n + 1, 'm3a3'
+            return 3 * n + 1, 'm3a1'
         else:
             return 3 * n + 3, 'm3a3'
 
@@ -207,11 +218,38 @@ def generate_orbit_info(
     Generates detailed information about an orbit starting from a given number.
 
     Args:
-        n (int): Starting number for the orbit.
-        lookup_map (Dict[int, int]): Map of first drop values to their magnitude.
-        wheel_map (Dict[int, int]): Map of first drop values to wheel positions.
-        index_map (Dict[str, int]): Map of first drop and mod values to counts.
-        options (OrbitOptions): Configuration for the orbit rule set.
+        n (int): The starting number for the orbit.
+        options (OrbitOptions): The configuration for the orbit generation, defining rules for 
+            halting, increasing, decreasing, and appending values to the orbit.
+        lookup_map (Dict[int, int], optional): A map of first drop values to their magnitudes. 
+            Used for advanced orbit analysis. Defaults to None.
+        wheel_map (Dict[int, int], optional): A map of first drop values to their wheel positions.
+            Used to track modular relationships. Defaults to None.
+        index_map (Dict[str, int], optional): A map of first drop and mod values to their occurrence counts.
+            Used to maintain indexed relationships. Defaults to None.
+
+    Returns:
+        Tuple: A tuple containing:
+            - first_drop (int): The step at which the first drop occurred, relative to the starting value.
+            - first_orbit (list[int]): The sequence of numbers in the orbit up to the first drop.
+            - orbit (list[int]): The complete sequence of numbers in the generated orbit.
+            - stopping_mod (int): The modular value at which the orbit stopped.
+            - stopping_index (int): The index at which the stopping condition occurred.
+            - first_op_list (list[str]): A list of operation IDs for the first drop.
+            - first_op_map (dict[str, int]): A map of operation IDs to their counts during the first drop.
+            - total_op_list (list[str]): A list of all operation IDs encountered in the orbit.
+            - total_op_map (dict[str, int]): A map of operation IDs to their total counts.
+
+    Raises:
+        Exception: If `first_drop` is not found in the provided `lookup_map` when required.
+
+    Notes:
+        - This function generates an orbit based on the rules specified in the `options`.
+        - If advanced mapping (`lookup_map`, `wheel_map`, and `index_map`) is provided and valid, 
+          it updates those maps during the first drop computation.
+        - Special cases for orbits starting with predefined configurations are handled explicitly 
+          (e.g., '3x_plus_1' starting at 1).
+
     """
     building_frome_scratch = (lookup_map != None and wheel_map != None and index_map != None)
     if options.name == '3x_plus_1' and n == 1:
@@ -278,6 +316,7 @@ def generate_orbit_info(
 
     return first_drop, first_orbit, orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map
 
+
 def generate_maps() -> Tuple[Dict[int, int], Dict[int, int], Dict[str, int]]:
     """
     Generates initial lookup, wheel, and index maps for orbit calculations.
@@ -293,7 +332,7 @@ def generate_maps() -> Tuple[Dict[int, int], Dict[int, int], Dict[str, int]]:
     index_map = {1: 1}
     return lookup_map, wheel_map, index_map
 
-def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> List[OrbitInfo]:
+def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> list[OrbitInfo]:
     """
     Generates a batch of orbit information for numbers up to the specified total.
 
