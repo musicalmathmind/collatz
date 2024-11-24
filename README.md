@@ -22,6 +22,10 @@ The Collatz Conjecture, also known as the "3n + 1 problem," is a famous unsolved
    - Each integer is represented as a point in 3D space based on its First Drop, Stopping Modulus, and Stopping Index.
    - This approach highlights the periodic and geometric properties of Collatz sequences, such as their sparse distribution in the address space and predictable periodic distances between related orbits.
 
+### Visualization of Mappings in 3D Space
+
+![Collatz Address Space](./images/collatz_address_space_r3.png)
+
 ---
 
 ## **Dependencies**
