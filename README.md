@@ -24,7 +24,7 @@ The Collatz Conjecture, also known as the "3n + 1 problem," is a famous unsolved
 
 ### Visualization of Mappings in 3D Space
 
-![Collatz Address Space](./images/collatz_address_space_r3.png)
+![Collatz Address Space](./images/collatz_address_space_r3_v2.png)
 
 ---
 
