@@ -198,10 +198,10 @@ def get_allowable_dropping_times(n_terms: int, options: OrbitOptions) -> List[in
 
 def generate_orbit_info(
     n: int,
-    lookup_map: Dict[int, int],
-    wheel_map: Dict[int, int],
-    index_map: Dict[str, int],
-    options: OrbitOptions
+    options: OrbitOptions,
+    lookup_map: Dict[int, int] = None,
+    wheel_map: Dict[int, int] = None,
+    index_map: Dict[str, int] = None,
 ) -> Tuple[int, List[int], List[int], int, int]:
     """
     Generates detailed information about an orbit starting from a given number.
@@ -221,6 +221,7 @@ def generate_orbit_info(
             - Stopping modulus (int)
             - Stopping index (int)
     """
+    building_frome_scratch = (lookup_map != None and wheel_map != None and index_map != None)
     if options.name == '3x_plus_1' and n == 1:
         return [1, [1, 4, 2], [1, 4, 2], 1, 1]
     if options.name == '3x_plus_3' and n == 3:
@@ -243,8 +244,8 @@ def generate_orbit_info(
         if n <= orig_n and first_orbit is None:
             first_orbit = orbit[:]
             first_drop = len(first_orbit)
-
-            if options.name in fully_supported_option_names:
+            
+            if (building_frome_scratch) and options.name in fully_supported_option_names:
                 if first_drop not in lookup_map:
                     raise Exception(f'First drop {first_drop} not in lookup_map')
 
@@ -283,7 +284,7 @@ def generate_maps() -> Tuple[Dict[int, int], Dict[int, int], Dict[str, int]]:
     index_map = {1: 1}
     return lookup_map, wheel_map, index_map
 
-def generate_orbit_info_batch(total: int, orbit_options: OrbitOptions) -> List[OrbitInfo]:
+def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> List[OrbitInfo]:
     """
     Generates a batch of orbit information for numbers up to the specified total.
 
@@ -294,8 +295,8 @@ def generate_orbit_info_batch(total: int, orbit_options: OrbitOptions) -> List[O
     Returns:
         List[OrbitInfo]: A list of OrbitInfo objects for the generated orbits.
     """
-    admissible: List[int] = get_admissible(200, orbit_options)
-    allowable_dropping_times: List[int] = get_allowable_dropping_times(200, orbit_options)
+    admissible: List[int] = get_admissible(200, orbit_option)
+    allowable_dropping_times: List[int] = get_allowable_dropping_times(200, orbit_option)
     lookup_map, wheel_map, index_map = generate_maps()
 
     # Populate maps based on allowable dropping times and admissible values
@@ -306,11 +307,10 @@ def generate_orbit_info_batch(total: int, orbit_options: OrbitOptions) -> List[O
 
     results: List[OrbitInfo] = []
     try:
-        for n in range(orbit_options.min_n, total):
+        for n in range(orbit_option.min_n, total):
             # Generate detailed orbit information for each number
             first_drop, first_orbit, orbit, stopping_mod, stopping_index = generate_orbit_info(
-                n, lookup_map, wheel_map, index_map, orbit_options
-            )
+                n, orbit_option, lookup_map, wheel_map, index_map)
             results.append(OrbitInfo(n, first_drop, first_orbit, orbit, stopping_mod, stopping_index))
     except Exception as e:
         # Handle errors and log exception
