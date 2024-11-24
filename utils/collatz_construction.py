@@ -4,7 +4,7 @@ from utils.orbit_info import OrbitInfo
 from typing import Callable, Dict, List, Tuple
 
 # List of option names that are fully supported for orbit operations
-fully_supported_option_names = ['3x_plus_1']
+fully_supported_option_names = ['m3a1']
 
 class OrbitOptions:
     """
@@ -76,7 +76,7 @@ def create_m3a1_options() -> OrbitOptions:
     def append_to_orbit(n: int, orbit: List[int]):
         orbit.append(n)
 
-    return OrbitOptions('3x_plus_1', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+    return OrbitOptions('m3a1', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
 
 def create_m3a3_options() -> OrbitOptions:
     """
@@ -103,7 +103,7 @@ def create_m3a3_options() -> OrbitOptions:
     def append_to_orbit(n: int, orbit: List[int]):
         orbit.append(n)
 
-    return OrbitOptions('3x_plus_3', 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+    return OrbitOptions('m3a3', 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
 
 def create_probabilistic_options(p: float) -> OrbitOptions:
     """
@@ -152,13 +152,13 @@ def get_admissible(n_terms, options: OrbitOptions) -> List[int]:
         List[int]: A list of admissible values for the specified rule set.
 
     Notes:
-        - This implementation is specific to the '3x_plus_1' rule set.
+        - This implementation is specific to the 'm3a1' rule set.
         - Uses an iterative approach to compute admissible terms based on 
           a dynamic programming-like update of two arrays, `x` and `y`.
     """
     limit = 1000  # Limit on the number of terms to calculate
     results = []
-    if options.name == '3x_plus_1':
+    if options.name == 'm3a1':
         x = [0] * (limit + 2)  # x[1] to x[limit+1]
         y = [0] * (limit + 2)
         x[1] = 1  # Initial condition
@@ -197,11 +197,11 @@ def get_allowable_dropping_times(n_terms: int, options: OrbitOptions) -> List[in
         List[int]: A list of allowable dropping times.
 
     Notes:
-        - Specific to the '3x_plus_1' rule set.
+        - Specific to the 'm3a1' rule set.
         - Computes terms based on a logarithmic formula.
     """
     results = []
-    if options.name == '3x_plus_1':
+    if options.name == 'm3a1':
         for n in range(1, n_terms + 1):
             a_n_plus1 = math.floor(1 + n + n * math.log(3) / math.log(2))
             results.append(a_n_plus1)
@@ -248,13 +248,13 @@ def generate_orbit_info(
         - If advanced mapping (`lookup_map`, `wheel_map`, and `index_map`) is provided and valid, 
           it updates those maps during the first drop computation.
         - Special cases for orbits starting with predefined configurations are handled explicitly 
-          (e.g., '3x_plus_1' starting at 1).
+          (e.g., 'm3a1' starting at 1).
 
     """
     building_frome_scratch = (lookup_map != None and wheel_map != None and index_map != None)
-    if options.name == '3x_plus_1' and n == 1:
+    if options.name == 'm3a1' and n == 1:
         return [1, [1, 4, 2], [1, 4, 2], 1, 1, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}]
-    if options.name == '3x_plus_3' and n == 3:
+    if options.name == 'm3a3' and n == 3:
         return [3, [3, 12, 6], [3, 12, 6], 1, 1, ['m3a3', 'd2', 'm3a3'], {'m3a3': 2, 'd2': 1}, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}]
 
     orbit = [n]

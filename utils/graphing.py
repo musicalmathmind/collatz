@@ -79,7 +79,7 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600,
     fig.show()
 
 
-def graph_options(
+def graph_options_evaluation(
     up_to_n: int,
     options: Union[OrbitOptions, List[OrbitOptions]],
     point_builder: Callable[[cc.OrbitInfo], tuple],
@@ -115,14 +115,14 @@ def graph_options(
     Notes:
         - Converts a single `OrbitOptions` object into a list for uniform processing.
         - Ensures the `colors` parameter matches the number of `options` to avoid mismatched data.
-        - Calls `process_orbit_info` to generate plotting data for each `OrbitOptions` instance.
+        - Calls `generate_points_from_option` to generate plotting data for each `OrbitOptions` instance.
 
     Example:
         options = [
-            OrbitOptions("3x_plus_1", 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit),
-            OrbitOptions("3x_plus_3", 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+            OrbitOptions("m3a1", 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit),
+            OrbitOptions("m3a1", 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
         ]
-        graph_options(
+        graph_options_evaluation(
             up_to_n=100,
             options=options,
             point_builder=build_point,
@@ -153,7 +153,7 @@ def graph_options(
     
     # Process orbit info for each option and color
     for option, color in zip(options, colors):
-        points, labels, point_colors = process_orbit_info(up_to_n, [option], [color], point_builder)
+        points, labels, point_colors = generate_points_from_option(up_to_n, [option], [color], point_builder)
         all_points.extend(points)
         all_labels.extend(labels)
         all_colors.extend(point_colors)
@@ -162,14 +162,14 @@ def graph_options(
     draw_3d_scatterplot(all_points, all_labels, all_colors, 800, 600, x_axis, y_axis, z_axis, title)
 
 
-def process_orbit_info(
+def generate_points_from_option(
     up_to_n: int,
     options: List[OrbitOptions],
     colors: List[str],
     point_builder: Callable[[cc.OrbitInfo], tuple]
 ):
     """
-    Processes orbit information and prepares data for visualization.
+    Processes orbit information and prepares returns a tuple of points, labels, and colors for plotting.
 
     Args:
         up_to_n (int): The upper limit for generating orbit data (inclusive).
@@ -195,11 +195,11 @@ def process_orbit_info(
 
     Example:
         options = [
-            OrbitOptions("3x_plus_1", 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit),
-            OrbitOptions("3x_plus_3", 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+            OrbitOptions("m3a1", 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit),
+            OrbitOptions("m3a1", 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
         ]
         colors = ["red", "blue"]
-        points, labels, point_colors = process_orbit_info(100, options, colors, build_point)
+        points, labels, point_colors = generate_points_from_option(100, options, colors, build_point)
     """
     points = []
     labels = []
