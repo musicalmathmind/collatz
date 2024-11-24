@@ -192,3 +192,64 @@ graphing.graph_options_evaluation(
 ```
 
 <img src="images/sample_multiple_options.png" alt="3x+3" height="500">
+
+## **Explanation**
+
+This example illustrates:
+
+### **Configuration of Options**:
+
+- **`m3a1_option`**: Standard "3x+1" rule.
+- **`m3a3_option`**: Modified "3x+3" rule.
+- **`probability_option`**: A probabilistic rule where a random choice determines the next step with a 50% probability.
+
+### **Visualization**:
+
+- The `graph_options_evaluation` function processes all options simultaneously.
+- Each configuration is visualized with a unique color:
+  - **Red**: "3x+1" rule.
+  - **Blue**: "3x+3" rule.
+  - **Green**: Probabilistic rule.
+
+### **Custom Point Builder**:
+
+- Transforms the `OrbitInfo` object into 3D points:
+  - **X-axis**: `n` (starting integer).
+  - **Y-axis**: Total operation count for "3x+3."
+  - **Z-axis**: Total operation count for "3x+1."
+
+### **Insights**
+
+This approach helps to:
+
+1. **Analyze Behavior**:
+
+   - Compare stopping times, operation counts, or other properties across rules.
+
+2. **Identify Patterns**:
+
+   - Discover differences in periodicity or sparsity between deterministic and probabilistic rules.
+
+3. **Highlight Relationships**:
+   - Visualize overlaps or divergences in stopping properties between configurations.
+
+The flexibility to compare multiple rules in a single plot enables deeper insights into the modular and probabilistic behaviors of Collatz-like sequences.
+
+## **Wrapping Up**
+
+The exploration of the Collatz Conjecture offers a fascinating glimpse into the interplay of deterministic and probabilistic behaviors, geometric patterns, and modular relationships. By leveraging computational tools, we can uncover hidden structures and generate fresh insights into one of mathematics' most enduring mysteries.
+
+Whether you're a mathematician, programmer, or curious enthusiast, there's always more to discover in this intriguing space. From developing new visualization techniques to testing unique rules, your contributions can help advance our understanding of these captivating sequences.
+
+### **Call to Action**
+
+We invite you to contribute to this project! Here’s how you can get involved:
+
+- **Propose Enhancements**: Share your ideas for new features or analyses.
+- **Fix Bugs**: Help improve the codebase with your debugging expertise.
+- **Add Documentation**: Make the project more accessible for others by enhancing documentation.
+- **Explore New Rules**: Implement and analyze different Collatz-like rules.
+
+To get started, fork the repository, make your changes, and submit a pull request.
+
+Happy exploring, and we look forward to your contributions!
