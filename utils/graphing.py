@@ -98,8 +98,8 @@ def process_orbit_info(
         for orbit_info in batch:
             p = (
                 orbit_info.n,
-                len(orbit_info.first_orbit),
-                len(orbit_info.total_orbit)
+                len(orbit_info.first_orbit or []),
+                len(orbit_info.total_orbit or [])
             )
             points.append(p)
             labels.append(str(p))

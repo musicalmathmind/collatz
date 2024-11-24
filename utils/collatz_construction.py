@@ -16,19 +16,19 @@ class OrbitOptions:
         should_halt (Callable): Function to determine when to halt the orbit.
         should_decrease (Callable): Function to determine if the value should decrease.
         should_increase (Callable): Function to determine if the value should increase.
-        decrease (Callable): Function to decrease the value.
-        increase (Callable): Function to increase the value.
+        decrease (Callable): Function to decrease the value. Returns an id for the decrease operation.
+        increase (Callable): Function to increase the value. Returns an id for the increase operation.
         append_to_orbit (Callable): Function to append the current value to the orbit list.
     """
     def __init__(
         self,
         name: str,
-        min_n: int, 
-        should_halt: Callable[[int], bool], 
-        should_decrease: Callable[[int], bool], 
-        should_increase: Callable[[int], bool], 
-        decrease: Callable[[int], None], 
-        increase: Callable[[int], None],  
+        min_n: int,
+        should_halt: Callable[[int], bool],
+        should_decrease: Callable[[int], bool],
+        should_increase: Callable[[int], bool],
+        decrease: Callable[[int], Tuple[int, str]],
+        increase: Callable[[int], Tuple[int, str]],
         append_to_orbit: Callable[[int, List[int]], None]
     ):
         self.name: str = name
@@ -36,8 +36,8 @@ class OrbitOptions:
         self.should_halt: Callable[[int], bool] = should_halt
         self.should_decrease: Callable[[int], bool] = should_decrease
         self.should_increase: Callable[[int], bool] = should_increase
-        self.decrease: Callable[[int], None] = decrease
-        self.increase: Callable[[int], None] = increase
+        self.decrease: Callable[[int], Tuple[int, str]] = decrease
+        self.increase: Callable[[int], Tuple[int, str]] = increase
         self.append_to_orbit: Callable[[int, List[int]], None] = append_to_orbit
 
 def create_collatz_3x_plus_1_options() -> OrbitOptions:
@@ -56,11 +56,11 @@ def create_collatz_3x_plus_1_options() -> OrbitOptions:
     def should_increase(n: int) -> bool:
         return n % 2 != 0
 
-    def decrease(n: int) -> int:
-        return n // 2
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
 
-    def increase(n: int) -> int:
-        return 3 * n + 1
+    def increase(n: int) -> Tuple[int, str]:
+        return 3 * n + 1, 'm3a1'
 
     def append_to_orbit(n: int, orbit: List[int]):
         orbit.append(n)
@@ -83,11 +83,11 @@ def create_collatz_3x_plus_3_options() -> OrbitOptions:
     def should_increase(n: int) -> bool:
         return n % 2 != 0
 
-    def decrease(n: int) -> int:
-        return n // 2
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
 
-    def increase(n: int) -> int:
-        return 3 * n + 3
+    def increase(n: int) -> Tuple[int, str]:
+        return 3 * n + 3, 'm3a3'
 
     def append_to_orbit(n: int, orbit: List[int]):
         orbit.append(n)
@@ -113,15 +113,15 @@ def create_collatz_probabilistic_options(p: float) -> OrbitOptions:
     def should_increase(n: int) -> bool:
         return n % 2 != 0
 
-    def decrease(n: int) -> int:
-        return n // 2
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
 
-    def increase(n: int) -> int:
+    def increase(n: int) -> Tuple[int, str]:
         r = random.random()
         if r < p:
-            return 3 * n + 1
+            return 3 * n + 1, 'm3a3'
         else:
-            return 3 * n + 3
+            return 3 * n + 3, 'm3a3'
 
     def append_to_orbit(n: int, orbit: List[int]):
         orbit.append(n)
@@ -202,7 +202,7 @@ def generate_orbit_info(
     lookup_map: Dict[int, int] = None,
     wheel_map: Dict[int, int] = None,
     index_map: Dict[str, int] = None,
-) -> Tuple[int, List[int], List[int], int, int]:
+) -> Tuple[int, list[int], list[int], int, int, list[str], dict[str, int], list[str], dict[str, int]]:
     """
     Generates detailed information about an orbit starting from a given number.
 
@@ -212,20 +212,12 @@ def generate_orbit_info(
         wheel_map (Dict[int, int]): Map of first drop values to wheel positions.
         index_map (Dict[str, int]): Map of first drop and mod values to counts.
         options (OrbitOptions): Configuration for the orbit rule set.
-
-    Returns:
-        Tuple[int, List[int], List[int], int, int]: A tuple containing:
-            - First drop (int)
-            - First orbit (List[int])
-            - Full orbit (List[int])
-            - Stopping modulus (int)
-            - Stopping index (int)
     """
     building_frome_scratch = (lookup_map != None and wheel_map != None and index_map != None)
     if options.name == '3x_plus_1' and n == 1:
-        return [1, [1, 4, 2], [1, 4, 2], 1, 1]
+        return [1, [1, 4, 2], [1, 4, 2], 1, 1, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}]
     if options.name == '3x_plus_3' and n == 3:
-        return [3, [3, 12, 6], [3, 12, 6], 1, 1]
+        return [3, [3, 12, 6], [3, 12, 6], 1, 1, ['m3a3', 'd2', 'm3a3'], {'m3a3': 2, 'd2': 1}, ['m3a1', 'd2', 'm3a1'], {'m3a1': 2, 'd2': 1}]
 
     orbit = [n]
     orig_n = n
@@ -233,12 +225,29 @@ def generate_orbit_info(
     stopping_mod = None
     stopping_index = None
     first_drop = None
+    first_op_list = []
+    first_op_map = {}
+    total_op_list = []
+    total_op_map = {}
 
     while options.should_halt(n) is False:
+        inc_op_id = None
         if options.should_decrease(n):
-            n = options.decrease(n)
+            n, inc_op_id = options.decrease(n)
         else:
-            n = options.increase(n)
+            n, inc_op_id = options.increase(n)
+            
+        if (inc_op_id is not None):
+            total_op_list.append(inc_op_id)
+            if (inc_op_id not in total_op_map):
+                total_op_map[inc_op_id] = 0
+            total_op_map[inc_op_id] += 1
+            
+            if (first_drop is None):
+                first_op_list.append(inc_op_id)
+                if (inc_op_id not in first_op_map):
+                    first_op_map[inc_op_id] = 0
+                first_op_map[inc_op_id] += 1
 
         # Check for the first drop and update related maps
         if n <= orig_n and first_orbit is None:
@@ -267,7 +276,7 @@ def generate_orbit_info(
         # Append the current value to the orbit
         options.append_to_orbit(n, orbit)
 
-    return first_drop, first_orbit, orbit, stopping_mod, stopping_index
+    return first_drop, first_orbit, orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map
 
 def generate_maps() -> Tuple[Dict[int, int], Dict[int, int], Dict[str, int]]:
     """
@@ -309,11 +318,11 @@ def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> List[Or
     try:
         for n in range(orbit_option.min_n, total):
             # Generate detailed orbit information for each number
-            first_drop, first_orbit, orbit, stopping_mod, stopping_index = generate_orbit_info(
+            first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map = generate_orbit_info(
                 n, orbit_option, lookup_map, wheel_map, index_map)
-            results.append(OrbitInfo(n, first_drop, first_orbit, orbit, stopping_mod, stopping_index))
+            results.append(OrbitInfo(n, first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map))
     except Exception as e:
-        # Handle errors and log exception
         print(e)
+        raise e
 
     return results
