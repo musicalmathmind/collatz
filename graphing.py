@@ -1,8 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
 
-def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600):
+def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600, 
+                        x_axis="X Axis", y_axis="Y Axis", z_axis="Z Axis", title="3D Interactive Scatterplot"):
     """
     Draws a 3D interactive scatterplot using Plotly.
 
@@ -11,6 +11,10 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600)
     :param colors: List of colors for each point (optional).
     :param width: Width of the plot (default: 800).
     :param height: Height of the plot (default: 600).
+    :param x_axis: Title for the X-axis (default: "X Axis").
+    :param y_axis: Title for the Y-axis (default: "Y Axis").
+    :param z_axis: Title for the Z-axis (default: "Z Axis").
+    :param title: Title of the plot (default: "3D Interactive Scatterplot").
     """
     # Extract x, y, z coordinates
     x = [p[0] for p in points]
@@ -27,7 +31,7 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600)
         z=z,
         mode='markers',
         marker=dict(
-            size=3,
+            size=5,
             color=colors if colors else 'blue',
             opacity=0.8
         ),
@@ -37,11 +41,11 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600)
 
     # Define the layout
     layout = go.Layout(
-        title="3D Interactive Scatterplot",
+        title=title,
         scene=dict(
-            xaxis_title='X Axis',
-            yaxis_title='Y Axis',
-            zaxis_title='Z Axis'
+            xaxis_title=x_axis,
+            yaxis_title=y_axis,
+            zaxis_title=z_axis
         ),
         width=width,
         height=height
