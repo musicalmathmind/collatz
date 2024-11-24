@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from orbit_info import OrbitInfo  # Ensure the OrbitInfo class is defined in orbit_info.py
+from utils.orbit_info import OrbitInfo  # Ensure the OrbitInfo class is defined in orbit_info.py
 
 def initialize_db_and_create_table():
     # Ensure the 'db' folder exists

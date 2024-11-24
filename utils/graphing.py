@@ -1,5 +1,9 @@
 import numpy as np
 import plotly.graph_objects as go
+import utils.collatz_construction as cc
+from utils.collatz_construction import OrbitOptions
+
+point_size = 5
 
 def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600, 
                         x_axis="X Axis", y_axis="Y Axis", z_axis="Z Axis", title="3D Interactive Scatterplot"):
@@ -31,7 +35,7 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600,
         z=z,
         mode='markers',
         marker=dict(
-            size=5,
+            size=point_size,
             color=colors if colors else 'blue',
             opacity=0.8
         ),
@@ -54,3 +58,50 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600,
     # Create the figure and display it
     fig = go.Figure(data=[scatter], layout=layout)
     fig.show()
+
+
+from typing import Union, List
+
+def graph_options(
+    up_to_n: int,
+    options: Union[OrbitOptions, List[OrbitOptions]],
+    colors: Union[str, List[str]] = 'red',
+    title: str = 'Orbit Lengths'
+):
+    # Ensure options is a list
+    if not isinstance(options, list):
+        options = [options]
+    
+    # Ensure colors is a list and matches the length of options
+    if isinstance(colors, str):
+        colors = [colors] * len(options)
+    elif isinstance(colors, list):
+        if len(colors) != len(options):
+            raise ValueError("The length of colors must match the length of options.")
+    else:
+        raise TypeError("colors must be a string or a list of strings.")
+    
+    points, labels, point_colors = process_orbit_info(up_to_n, options, colors)
+    draw_3d_scatterplot(points, labels, point_colors, 800, 600, 'n', 'First Orbit Length', 'Total Orbit Length', title)
+
+def process_orbit_info(
+    up_to_n: int,
+    options: List[OrbitOptions],
+    colors: List[str]
+):
+    points = []
+    labels = []
+    point_colors = []
+    
+    for option, color in zip(options, colors):
+        batch = cc.generate_orbit_info_batch(up_to_n, option)
+        for orbit_info in batch:
+            p = (
+                orbit_info.n,
+                len(orbit_info.first_orbit),
+                len(orbit_info.total_orbit)
+            )
+            points.append(p)
+            labels.append(str(p))
+            point_colors.append(color)
+    return points, labels, point_colors

@@ -1,7 +1,6 @@
-# Import necessary modules
-from orbit_info import OrbitInfo
 import math
 import random 
+from utils.orbit_info import OrbitInfo
 from typing import Callable, Dict, List, Tuple
 
 # List of option names that are fully supported for orbit operations
