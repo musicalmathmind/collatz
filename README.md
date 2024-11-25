@@ -2,7 +2,7 @@
 
 This project is a computational and visual exploration of the Collatz Conjecture, focusing on its geometric and modular properties. The work leverages structured frameworks to analyze Collatz sequences, revealing patterns in stopping times, modular relationships, and periodic behaviors. This repository serves as both a toolkit and a foundation for further investigation into one of mathematics' most intriguing unsolved problems.
 
-<img src="images/collatz_address_space_r3_v3.png" alt="Collatz Address Space" height="500">
+<img src="images/saddle_graph.png" alt="Saddle Graph" height="500">
 
 ---
 
