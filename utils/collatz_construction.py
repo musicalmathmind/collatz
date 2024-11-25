@@ -29,6 +29,7 @@ class OrbitOptions:
             Accepts two arguments:
             - The current value (int).
             - The list representing the orbit (List[int]).
+        max_iterations (int): The maximum number of iterations allowed for the orbit generation process.
     """
     def __init__(
         self,
@@ -39,7 +40,8 @@ class OrbitOptions:
         should_increase: Callable[[int], bool],
         decrease: Callable[[int], Tuple[int, str]],
         increase: Callable[[int], Tuple[int, str]],
-        append_to_orbit: Callable[[int, List[int]], None]
+        append_to_orbit: Callable[[int, List[int]], None],
+        max_iterations: int = None
     ):
         self.name: str = name
         self.min_n: int = min_n
@@ -49,6 +51,7 @@ class OrbitOptions:
         self.decrease: Callable[[int], Tuple[int, str]] = decrease
         self.increase: Callable[[int], Tuple[int, str]] = increase
         self.append_to_orbit: Callable[[int, List[int]], None] = append_to_orbit
+        self.max_iterations: int = max_iterations
 
 
 def create_m3a1_options() -> OrbitOptions:
@@ -105,6 +108,34 @@ def create_m3a3_options() -> OrbitOptions:
 
     return OrbitOptions('m3a3', 3, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
 
+def create_m3a5_options(max_iterations: int = 100) -> OrbitOptions:
+    """
+    Creates an OrbitOptions instance for a modified 3x+5 Collatz rule set.
+
+    Returns:
+        OrbitOptions: Configuration for the 3x+5 orbit generation.
+    """
+    def should_halt(n: int) -> bool:
+        return n == 5
+
+    def should_decrease(n: int) -> bool:
+        return n % 2 == 0
+
+    def should_increase(n: int) -> bool:
+        return n % 2 != 0
+
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
+
+    def increase(n: int) -> Tuple[int, str]:
+        return 3 * n + 5, 'm3a5'
+
+    def append_to_orbit(n: int, orbit: List[int]):
+        orbit.append(n)
+
+    return OrbitOptions('m3a5', 5, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit, max_iterations)
+    
+    
 def create_probabilistic_options(p: float) -> OrbitOptions:
     """
     Creates an OrbitOptions instance for a probabilistic Collatz-like rule set.
@@ -138,6 +169,7 @@ def create_probabilistic_options(p: float) -> OrbitOptions:
         orbit.append(n)
 
     return OrbitOptions('probabilistic', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+
 
 # https://oeis.org/A100982
 def get_admissible(n_terms, options: OrbitOptions) -> List[int]:
@@ -270,6 +302,8 @@ def generate_orbit_info(
 
     while options.should_halt(n) is False:
         inc_op_id = None
+        if (options.max_iterations is not None) and (len(orbit) >= options.max_iterations):
+            break
         if options.should_decrease(n):
             n, inc_op_id = options.decrease(n)
         else:
