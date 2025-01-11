@@ -79,6 +79,73 @@ def draw_3d_scatterplot(points, labels=None, colors=None, width=800, height=600,
     fig.show()
 
 
+import numpy as np
+import plotly.graph_objects as go
+
+def draw_3d_polar_plot(spherical_points, labels=None, colors=None, width=800, height=600, 
+                       r_axis="Radius (r)", theta_axis="Theta (θ)", phi_axis="Phi (φ)", title="3D Polar Plot"):
+    """
+    Draws an interactive 3D polar plot using Plotly.
+
+    Args:
+        spherical_points (list[tuple[float, float, float]]): A list of (r, θ, φ) coordinates where:
+            - r: Radial distance (radius)
+            - θ: Azimuthal angle (angle in the xy-plane, in radians)
+            - φ: Polar angle (angle from the z-axis, in radians)
+        labels (list[str], optional): A list of labels corresponding to each point, displayed on hover.
+            Defaults to None, resulting in no labels.
+        colors (list[str] or list[int], optional): A list of colors for each point. Can be color names, 
+            hex codes, or numeric values for a color scale. Defaults to None, using a default color ('blue').
+        width (int, optional): The width of the plot in pixels. Defaults to 800.
+        height (int, optional): The height of the plot in pixels. Defaults to 600.
+        r_axis (str, optional): Label for the radius (r). Defaults to "Radius (r)".
+        theta_axis (str, optional): Label for the azimuthal angle (θ). Defaults to "Theta (θ)".
+        phi_axis (str, optional): Label for the polar angle (φ). Defaults to "Phi (φ)".
+        title (str, optional): Title of the 3D polar plot. Defaults to "3D Polar Plot".
+
+    Returns:
+        None: Displays the interactive 3D polar plot using Plotly.
+    """
+    # Convert spherical coordinates (r, θ, φ) to Cartesian (x, y, z)
+    x = [r * np.sin(phi) * np.cos(theta) for r, theta, phi in spherical_points]
+    y = [r * np.sin(phi) * np.sin(theta) for r, theta, phi in spherical_points]
+    z = [r * np.cos(phi) for r, theta, phi in spherical_points]
+
+    # Create hover text based on provided labels or use empty strings if no labels
+    hover_text = labels if labels else [""] * len(spherical_points)
+
+    # Define the 3D scatter plot using Plotly
+    scatter = go.Scatter3d(
+        x=x,
+        y=y,
+        z=z,
+        mode='markers',
+        marker=dict(
+            size=5,  # Default point size
+            color=colors if colors else 'blue',  # Use provided colors or default to blue
+            opacity=0.8  # Semi-transparent markers
+        ),
+        text=hover_text,  # Text displayed on hover
+        hoverinfo='text'  # Show only hover text in tooltips
+    )
+
+    # Define the layout of the plot, including axis labels and dimensions
+    layout = go.Layout(
+        title=title,
+        scene=dict(
+            xaxis_title="X (Converted from r, θ, φ)",
+            yaxis_title="Y (Converted from r, θ, φ)",
+            zaxis_title="Z (Converted from r, θ, φ)"
+        ),
+        width=width,
+        height=height
+    )
+
+    # Create the figure with the scatter plot and layout, then display it
+    fig = go.Figure(data=[scatter], layout=layout)
+    fig.show()
+
+
 def graph_options_evaluation(
     up_to_n: int,
     options: Union[OrbitOptions, List[OrbitOptions]],

@@ -135,6 +135,46 @@ def create_m3a5_options(max_iterations: int = 100) -> OrbitOptions:
 
     return OrbitOptions('m3a5', 5, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit, max_iterations)
     
+def create_m3av_options(reverse: bool) -> OrbitOptions:
+    """
+    Creates an OrbitOptions instance for a probabilistic Collatz-like rule set.
+
+    Args:
+        p (float): Probability of applying the 3x+1 rule instead of 3x+3.
+
+    Returns:
+        OrbitOptions: Configuration for the probabilistic orbit generation.
+    """
+    def should_halt(n: int) -> bool:
+        return n <= 3
+
+    def should_decrease(n: int) -> bool:
+        return n % 2 == 0
+
+    def should_increase(n: int) -> bool:
+        return n % 2 != 0
+
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
+
+    def increase(n: int) -> Tuple[int, str]:
+        v = n % 4
+        if reverse:
+            if v == 3:
+                return 3 * n + 1, 'm3a1'
+            else:
+                return 3 * n + 3, 'm3a3'
+        else:
+            if v == 1:
+                return 3 * n + 1, 'm3a1'
+            else:
+                return 3 * n + 3, 'm3a3'
+
+
+    def append_to_orbit(n: int, orbit: List[int]):
+        orbit.append(n)
+
+    return OrbitOptions('probabilistic', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
     
 def create_probabilistic_options(p: float) -> OrbitOptions:
     """
@@ -169,6 +209,42 @@ def create_probabilistic_options(p: float) -> OrbitOptions:
         orbit.append(n)
 
     return OrbitOptions('probabilistic', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+
+def create_crawler_options(p: float) -> OrbitOptions:
+    """
+    Creates an OrbitOptions instance for a probabilistic Collatz-like rule set.
+
+    Args:
+        p (float): Probability of applying the 3x+1 rule instead of 3x+3.
+
+    Returns:
+        OrbitOptions: Configuration for the probabilistic orbit generation.
+    """
+    def should_halt(n: int) -> bool:
+        return n <= 3
+
+    def should_decrease(n: int) -> bool:
+        return n % 2 == 0
+
+    def should_increase(n: int) -> bool:
+        return n % 2 != 0
+
+    def decrease(n: int) -> Tuple[int, str]:
+        return n // 2, 'd2'
+
+    def increase(n: int) -> Tuple[int, str]:
+        r = random.random()
+        if r < p:
+            return 3 * n + 1, 'm3a1'
+        else:
+            return 3 * n + 3, 'm3a3'
+
+    def append_to_orbit(n: int, orbit: List[int]):
+        orbit.append(n)
+
+    return OrbitOptions('probabilistic', 1, should_halt, should_decrease, should_increase, decrease, increase, append_to_orbit)
+
+
 
 
 # https://oeis.org/A100982
@@ -239,7 +315,7 @@ def get_allowable_dropping_times(n_terms: int, options: OrbitOptions) -> List[in
             results.append(a_n_plus1)
     return results
 
-def generate_orbit_info(
+def generate_orbit_info_data(
     n: int,
     options: OrbitOptions,
     lookup_map: Dict[int, int] = None,
@@ -391,7 +467,7 @@ def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> list[Or
     try:
         for n in range(orbit_option.min_n, total):
             # Generate detailed orbit information for each number
-            first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map = generate_orbit_info(
+            first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map = generate_orbit_info_data(
                 n, orbit_option, lookup_map, wheel_map, index_map)
             results.append(OrbitInfo(n, first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map))
     except Exception as e:
@@ -399,3 +475,20 @@ def generate_orbit_info_batch(total: int, orbit_option: OrbitOptions) -> list[Or
         raise e
 
     return results
+
+
+
+def generate_orbit_info_single(n: int, orbit_option: OrbitOptions) -> list[OrbitInfo]:
+    """
+    Generates a batch of orbit information for numbers up to the specified total.
+
+    Args:
+        total (int): Total numbers to process.
+        orbit_options (OrbitOptions): Configuration for the orbit rule set.
+
+    Returns:
+        List[OrbitInfo]: A list of OrbitInfo objects for the generated orbits.
+    """
+
+    first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map = generate_orbit_info_data(n, orbit_option, None, None, None)
+    return OrbitInfo(n, first_drop, first_orbit, total_orbit, stopping_mod, stopping_index, first_op_list, first_op_map, total_op_list, total_op_map)
